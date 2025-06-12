@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD Aleatório</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    button {
+      margin: 5px;
+      padding: 8px 12px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    input {
+      padding: 6px;
+      margin-right: 5px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .editar {
+      background-color: #2196F3;
+    }
+
+    .remover {
+      background-color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <h1>CRUD Aleatório de Usuários</h1>
+
+  <button onclick="criarUsuario()">Adicionar Usuário Aleatório</button>
+
+  <ul id="listaUsuarios"></ul>
+
+  <script>
+    const nomes = ["Ana", "Carlos", "Beatriz", "João", "Mariana", "Pedro", "Renan", "Luana"];
+    let usuarios = [];
+    let id = 1;
+
+    function criarUsuario() {
+      const nomeAleatorio = nomes[Math.floor(Math.random() * nomes.length)];
+      usuarios.push({ id: id++, nome: nomeAleatorio });
+      renderizarLista();
+    }
+
+    function editarUsuario(id) {
+      const novoNome = prompt("Digite o novo nome:");
+      if (novoNome) {
+        const usuario = usuarios.find(u => u.id === id);
+        usuario.nome = novoNome;
+        renderizarLista();
+      }
+    }
+
+    function removerUsuario(id) {
+      usuarios = usuarios.filter(u => u.id !== id);
+      renderizarLista();
+    }
+
+    function renderizarLista() {
+      const ul = document.getElementById("listaUsuarios");
+      ul.innerHTML = "";
+
+      usuarios.forEach(usuario => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${usuario.nome}</strong>
+          <button class="editar" onclick="editarUsuario(${usuario.id})">Editar</button>
+          <button class="remover" onclick="removerUsuario(${usuario.id})">Remover</button>
+        `;
+        ul.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
