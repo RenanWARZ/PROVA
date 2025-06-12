@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Usuários - CRUD com JSON</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    form, .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    input {
+      width: 200px;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    .edit {
+      background: #ffc107;
+      border: none;
+    }
+
+    .delete {
+      background: #dc3545;
+      color: white;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cadastro de Usuários - CRUD com JSON</h1>
+
+  <form id="user-form">
+    <input type="text" id="name" placeholder="Nome" required>
+    <input type="email" id="email" placeholder="E-mail" required>
+    <input type="tel" id="phone" placeholder="Telefone" required>
+    <input type="date" id="birth" required>
+    <button type="submit">Salvar</button>
+  </form>
+
+  <div class="buttons">
+    <button onclick="exportToJSON()">Exportar JSON</button>
+    <input type="file" id="import-file" accept=".json" style="display: none;">
+    <button onclick="document.getElementById('import-file').click()">Importar JSON</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>E-mail</th>
+        <th>Telefone</th>
+        <th>Nascimento</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="user-table-body"></tbody>
+  </table>
+
+  <script>
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    let editIndex = null;
+
+    const form = document.getElementById('user-form');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const birthInput = document.getElementById('birth');
+    const tableBody = document.getElementById('user-table-body');
+    const importInput = document.getElementById('import-file');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const user = {
+        name: nameInput.value.trim(),
+        email: emailInput.value.trim(),
+        phone: phoneInput.value.trim(),
+        birth: birthInput.value
+      };
+
+      if (editIndex === null) {
+        users.push(user);
+      } else {
+        users[editIndex] = user;
+        editIndex = null;
+      }
+
+      saveUsers();
+      form.reset();
+      renderTable();
+    });
+
+    function renderTable() {
+      tableBody.innerHTML = '';
+      users.forEach((user, index) => {
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+          <td>${user.name}</td>
+          <td>${user.email}</td>
+          <td>${user.phone}</td>
+          <td>${user.birth}</td>
+          <td>
+            <button class="edit" onclick="editUser(${index})">Editar</button>
+            <button class="delete" onclick="deleteUser(${index})">Excluir</button>
+          </td>
+        `;
+
+        tableBody.appendChild(row);
+      });
+    }
+
+    function editUser(index) {
+      const user = users[index];
+      nameInput.value = user.name;
+      emailInput.value = user.email;
+      phoneInput.value = user.phone;
+      birthInput.value = user.birth;
+      editIndex = index;
+    }
+
+    function deleteUser(index) {
+      if (confirm('Deseja excluir este usuário?')) {
+        users.splice(index, 1);
+        saveUsers();
+        renderTable();
+      }
+    }
+
+    function saveUsers() {
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    function exportToJSON() {
+      const dataStr = JSON.stringify(users, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'usuarios.json';
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    importInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          if (Array.isArray(importedData)) {
+            users = importedData;
+            saveUsers();
+            renderTable();
+            alert('Importação realizada com sucesso!');
+          } else {
+            alert('Arquivo JSON inválido.');
+          }
+        } catch (err) {
+          alert('Erro ao importar JSON.');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Inicializar tabela ao carregar a página
+    renderTable();
+  </script>
+
+</body>
+</html>
