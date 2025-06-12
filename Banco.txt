@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema Bancário - CRUD</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    .btn {
+      cursor: pointer;
+      padding: 5px 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 3px;
+    }
+
+    .btn-edit {
+      background-color: #ffc107;
+    }
+
+    .btn-delete {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .btn-save {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .btn-cancel {
+      background-color: #6c757d;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>CRUD - Sistema Bancário</h1>
+
+    <!-- Formulário de Cadastro -->
+    <form id="account-form" onsubmit="handleFormSubmit(event)">
+      <input type="text" id="name" placeholder="Nome do Cliente" required>
+      <input type="text" id="cpf" placeholder="CPF" required>
+      <input type="number" id="balance" placeholder="Saldo Inicial" required>
+      <button type="submit">Cadastrar Conta</button>
+    </form>
+
+    <!-- Tabela de Contas Bancárias -->
+    <table id="accounts-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>CPF</th>
+          <th>Saldo</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="accounts-tbody">
+        <!-- Dados das contas serão inseridos aqui -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Função para atualizar a tabela de contas
+    function renderAccounts() {
+      const accounts = JSON.parse(localStorage.getItem("accounts")) || [];
+      const tableBody = document.getElementById("accounts-tbody");
+      tableBody.innerHTML = "";
+
+      accounts.forEach((account, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${account.name}</td>
+          <td>${account.cpf}</td>
+          <td>R$ ${account.balance.toFixed(2)}</td>
+          <td>
+            <button class="btn btn-edit" onclick="editAccount(${index})">Editar</button>
+            <button class="btn btn-delete" onclick="deleteAccount(${index})">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Função para salvar dados no localStorage
+    function saveAccounts(accounts) {
+      localStorage.setItem("accounts", JSON.stringify(accounts));
+    }
+
+    // Função chamada no envio do formulário
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const name = document.getElementById("name").value;
+      const cpf = document.getElementById("cpf").value;
+      const balance = parseFloat(document.getElementById("balance").value);
+
+      const accounts = JSON.parse(localStorage.getItem("accounts")) || [];
+      accounts.push({ name, cpf, balance });
+
+      saveAccounts(accounts);
+      renderAccounts();
+
+      // Limpar formulário
+      document.getElementById("account-form").reset();
+    }
+
+    // Função para editar conta
+    function editAccount(index) {
+      const accounts = JSON.parse(localStorage.getItem("accounts")) || [];
+      const account = accounts[index];
+
+      // Preencher o formulário com os dados da conta
+      document.getElementById("name").value = account.name;
+      document.getElementById("cpf").value = account.cpf;
+      document.getElementById("balance").value = account.balance;
+
+      // Modificar o botão para salvar as alterações
+      const form = document.getElementById("account-form");
+      const submitButton = form.querySelector("button");
+      submitButton.textContent = "Salvar Alterações";
+
+      // Modificar a função de envio para atualizar a conta
+      form.onsubmit = function (event) {
+        event.preventDefault();
+        account.name = document.getElementById("name").value;
+        account.cpf = document.getElementById("cpf").value;
+        account.balance = parseFloat(document.getElementById("balance").value);
+
+        accounts[index] = account;
+        saveAccounts(accounts);
+        renderAccounts();
+
+        // Resetar o botão e formulário
+        form.onsubmit = handleFormSubmit;
+        submitButton.textContent = "Cadastrar Conta";
+        form.reset();
+      };
+    }
+
+    // Função para excluir conta
+    function deleteAccount(index) {
+      const accounts = JSON.parse(localStorage.getItem("accounts")) || [];
+      accounts.splice(index, 1);
+      saveAccounts(accounts);
+      renderAccounts();
+    }
+
+    // Carregar dados ao iniciar
+    renderAccounts();
+  </script>
+
+</body>
+</html>
