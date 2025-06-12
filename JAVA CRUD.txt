@@ -1,0 +1,122 @@
+---------------------------------------------------------------------//login com validação-------------------------------------------------------------------------------
+const entrar = document.getElementById('entrar');
+
+entrar.addEventListener('click',function(){
+    let login = document.getElementById('login').value;
+    let senha = document.getElementById('senha').value;
+
+    //memoria local
+    const usuariosCadastrados = JSON.parse(localStorage.getItem('usuario')) || []; //texto para objetos,usnado o Json;
+
+    usuariosCadastrados.find(
+
+        u => u.usuario === login && u.senha === senha
+    );
+
+    if(usuariosCadastrados){
+
+        localStorage.setItem("userLogado",login);
+        window.location.href ="dashboard.html";
+        }else{
+            document.getElementById('mensagem').textContent = "Login ou senha incorreta";
+        }
+    }
+);
+ 
+--------------------------------------------------------------------------//cadastro com crud-----------------------------------------------------------------------------
+
+    //criação de registro
+    const botao = document.getElementById('btnCadastrar');
+    // const listaUsuario = [];
+
+    //criação registro
+    botao.addEventListener('click',function(){ //chama a função de click 
+    listaUsuario = JSON.parse(localStorage.getItem("usuarios")) || []; //Pega a lista de usuários salva no localStorage, converte de JSON para objeto JavaScript. Se não existir nada, usa uma lista vazia [].
+    const usuario = { //Objetivo: Cria um objeto usuario com os dados digitados nos inputs com IDs login e senha.
+    usuario: document.getElementById('login').value,
+    senha: document.getElementById('senha').value
+    };
+
+    //criar lista de usuarios
+    const indexEditar = document.getElementById("indexEditado").value; //Verifica se existe um índice em indexEditado. Esse campo só é preenchido quando clicamos em “Editar”.
+    if(indexEditar !== ""){ //Verifica se o campo indexEditado está preenchido (ou seja, se estamos no modo de edição).Se não estiver vazio, então significa que o usuário clicou em “Editar” anteriormente, e queremos atualizar o usuário já existente.
+    listaUsuario[indexEditar] = usuario; //Sobrescreve o usuário na posição indexEditar com os novos dados (usuario).
+    document.getElementById("indexEditado").value = ""; //Depois limpa o campo indexEditado para que, ao clicar em "Cadastrar" novamente, ele não sobrescreva por engano.
+    }else{
+    listaUsuario.push(usuario); //Se indexEditado estiver vazio (""), significa que estamos criando um novo usuário, então o novo objeto usuario é adicionado ao final da lista com push().
+    } //push adicionar um novo elemento ao final de um array.
+
+
+    //Salva a nova lista no localStorage após transformar em JSON.
+    listaJson = JSON.stringify(listaUsuario);
+    localStorage.setItem("usuarios",listaJson);
+
+    //Limpa os campos de entrada. Chama a função listar() para atualizar a tabela de usuários na tela.
+    document.getElementById('login').value = '';
+    document.getElementById('senha').value = '';
+    listar();
+    });
+
+
+/*  JSON.parse(...): converte a string JSON armazenada no localStorage de volta para um array JavaScript.
+    localStorage.getItem("usuarios"): busca os dados salvos no navegador com a chave "usuarios".
+    || []: se não houver nenhum dado salvo (retorna null), usa uma lista vazia como padrão. */
+    function listar(){
+    const usuarioCadastrados = JSON.parse(localStorage.getItem("usuarios")) || []; 
+
+
+    let tabela = document.getElementById('lista_usuario'); //Busca um elemento no HTML com o ID lista_usuario, que deve ser a tabela onde você quer exibir os usuários.
+    tabela.innerHTML = ''; //Esvazia o conteúdo da tabela.
+    usuarioCadastrados.forEach((usuario,index) => { //forEach é uma função de loop que percorre cada item do array usuarioCadastrados. index é a posição desse usuário no array (0, 1, 2, ...).
+      
+    let linha = document.createElement('tr'); //Cria um novo elemento HTML <tr>.
+       
+    //Define o conteúdo HTML interno da linha da tabela (<tr>), que foi criada anteriormente com: let linha = document.createElement('tr') 
+    linha.innerHTML = ` 
+    <td> ${usuario.usuario} </td>
+    <td> ${usuario.senha} </td>
+    <td>
+    <button onclick="editarUsuario(${index})">Editar</button>
+    <button onclick="excluirUsuario(${index})">Excluir</button>
+     </td>
+    `;
+
+
+        tabela.appendChild(linha);
+        
+    });
+}
+
+    function editarUsuario(index){
+        const usuarioCadastrados = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+        //Aqui estamos pegando o input que foi digitado, pegando o obj e jogando novamente dentro do input para poder edit,ar
+        // Objusuario ele recebe o usuarioCadastrado + o index que é a posição.
+        // login e senha na linha 57 e 58 podem ser editados e substituidos por um novo valor.
+        
+        const objUsuario = usuarioCadastrados[index];
+        document.getElementById('login').value = objUsuario.usuario;
+        document.getElementById('senha').value = objUsuario.senha;
+        document.getElementById('indexEditado').value = index;
+    }
+
+    function excluirUsuario(index){
+    //vou excluir diretamente do index, por contem o conteudo que o usuario digitou
+    //pegamos ele da linha 37, onde preenchemos ele com um dados
+
+    const usuarioCadastrados = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+    // 1 - excluir usuario 
+    // 2 - converter para JSON
+    // 3 - sobrescrever o que estava no 1.
+
+        if(confirm("Você realmente quer excluir?")){
+    /* 1 */ usuarioCadastrados.splice(index,1);  // splice procura um indice do meu vetor, e extrai desse indece a posição que eu achei. 1 item da lista.
+    /* 2 */ listaJson = JSON.stringify(usuarioCadastrados); // aqui vamos atualizar a minha memoria, depois de excluir um usuario.
+    /* 3 */ localStorage.setItem("usuarios",listaJson); // sobrescreve oque estava antes.
+        }
+
+    listar();
+    }
+
+    listar();
