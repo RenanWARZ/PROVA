@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD - Academia</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f1f1;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px #ccc;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    input, select, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    input, select {
+      width: 200px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    .btn {
+      cursor: pointer;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .btn-edit {
+      background-color: #ffc107;
+    }
+
+    .btn-delete {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .btn-save {
+      background-color: #28a745;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>CRUD - Sistema de Academia</h1>
+
+    <!-- Formulário -->
+    <form id="form-aluno">
+      <input type="text" id="nome" placeholder="Nome" required>
+      <input type="text" id="cpf" placeholder="CPF" required>
+      <input type="number" id="idade" placeholder="Idade" required>
+      <select id="plano" required>
+        <option value="">Plano</option>
+        <option value="Mensal">Mensal</option>
+        <option value="Trimestral">Trimestral</option>
+        <option value="Anual">Anual</option>
+      </select>
+      <button type="submit" id="btn-submit">Cadastrar</button>
+    </form>
+
+    <!-- Tabela -->
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>CPF</th>
+          <th>Idade</th>
+          <th>Plano</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-alunos"></tbody>
+    </table>
+  </div>
+
+  <script>
+    let alunos = JSON.parse(localStorage.getItem("alunosAcademia")) || [];
+    let editIndex = null;
+
+    const form = document.getElementById("form-aluno");
+    const nome = document.getElementById("nome");
+    const cpf = document.getElementById("cpf");
+    const idade = document.getElementById("idade");
+    const plano = document.getElementById("plano");
+    const btn = document.getElementById("btn-submit");
+    const tabela = document.getElementById("tabela-alunos");
+
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      const aluno = {
+        nome: nome.value.trim(),
+        cpf: cpf.value.trim(),
+        idade: parseInt(idade.value),
+        plano: plano.value
+      };
+
+      if (editIndex === null) {
+        alunos.push(aluno);
+      } else {
+        alunos[editIndex] = aluno;
+        editIndex = null;
+        btn.textContent = "Cadastrar";
+      }
+
+      salvar();
+      form.reset();
+      render();
+    };
+
+    function render() {
+      tabela.innerHTML = "";
+      alunos.forEach((aluno, i) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${aluno.nome}</td>
+          <td>${aluno.cpf}</td>
+          <td>${aluno.idade}</td>
+          <td>${aluno.plano}</td>
+          <td>
+            <button class="btn btn-edit" onclick="editar(${i})">Editar</button>
+            <button class="btn btn-delete" onclick="excluir(${i})">Excluir</button>
+          </td>
+        `;
+        tabela.appendChild(row);
+      });
+    }
+
+    function editar(i) {
+      const aluno = alunos[i];
+      nome.value = aluno.nome;
+      cpf.value = aluno.cpf;
+      idade.value = aluno.idade;
+      plano.value = aluno.plano;
+      editIndex = i;
+      btn.textContent = "Salvar";
+    }
+
+    function excluir(i) {
+      if (confirm("Deseja remover este aluno?")) {
+        alunos.splice(i, 1);
+        salvar();
+        render();
+      }
+    }
+
+    function salvar() {
+      localStorage.setItem("alunosAcademia", JSON.stringify(alunos));
+    }
+
+    render(); // Carrega ao iniciar
+  </script>
+
+</body>
+</html>
